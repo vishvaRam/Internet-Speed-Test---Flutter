@@ -7,6 +7,8 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:internet_speed_test/internet_speed_test.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:share/share.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 
 class Home extends StatefulWidget {
@@ -22,8 +24,9 @@ class _HomeState extends State<Home> {
 
   double deviceHeight = 0.0;
 
-  final Color yellow = const Color(0xFFFFC000);
-  final Color background = const Color(0xFF22272B);
+  final Color accentColor = const Color(0xFFFFC000);
+  final Color background = const Color(0xFF080808);
+  final Color meterBackground = const Color(0xFF006A6A);
   final Color cardColor = Colors.white10;
 
   final internetSpeedTest = InternetSpeedTest();
@@ -37,6 +40,7 @@ class _HomeState extends State<Home> {
   SpeedUnit uspeed = SpeedUnit.Kbps;
   double progress = 0;
   String _connectionStatus = 'Unknown';
+  bool isConnected = false;
 
   bool testing = false;
   bool downloadingDone = false;
@@ -73,13 +77,27 @@ class _HomeState extends State<Home> {
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
     switch (result) {
       case ConnectivityResult.wifi:
+        setState((){
+          isConnected = true ;
+        });
+        break;
       case ConnectivityResult.mobile:
+        setState((){
+          isConnected = true ;
+        });
+        break;
       case ConnectivityResult.none:
         setState(() => _connectionStatus = result.toString());
+        setState((){
+          isConnected = false ;
+        });
         print(_connectionStatus);
         break;
       default:
         setState(() => _connectionStatus = 'Failed to get connectivity.');
+        setState((){
+          isConnected = false;
+        });
         print(_connectionStatus);
         break;
     }}
@@ -177,267 +195,301 @@ class _HomeState extends State<Home> {
       listSpeedSize = 16;
     }
 
-    return Scaffold(
-        backgroundColor: background,
-        appBar: AppBar(
-          elevation: 0.0,
-          centerTitle: true,
-          title: Text(
-            "Internet Speed Tester",
-            style: TextStyle(color: yellow, fontSize: 24.0),
+    if(isConnected) {
+      return Scaffold(
+          backgroundColor: background,
+          appBar: AppBar(
+            elevation: 0.0,
+            centerTitle: true,
+            title: Text(
+              "Internet Speed Tester",
+              style: TextStyle(color: accentColor, fontSize: 24.0),
+            ),
+            actions: [
+              IconButton(icon: Icon(Icons.share_sharp), onPressed: () {
+                try {
+                  Share.share(
+                      "https://play.google.com/store/apps/details?id=com.vishva.internet.speed.tester.internetspeedtest",
+                      subject: "PDF Converter Plus");
+                } catch (e) {
+                  print(e);
+                }
+              }),
+              SizedBox(width: 10.0,)
+            ],
+            backgroundColor: Colors.transparent,
           ),
-          backgroundColor: Colors.transparent,
-        ),
-        body: Container(
-          height:height,
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            children: [
-              // Meter
-              Expanded(
-                flex: height < 750 ? 4 : 5,
-                child: Padding(
-                  padding: height < 750 ?  EdgeInsets.all(5): EdgeInsets.all(20),
-                  child: SfRadialGauge(
-                    enableLoadingAnimation: true,
-                    animationDuration: 2500,
-                    key: null,
-                    axes: <RadialAxis>[
-                      RadialAxis(
-                          labelOffset: 15,
-                          axisLineStyle: AxisLineStyle(
-                              thicknessUnit: GaugeSizeUnit.factor, thickness: 0.15),
-                          radiusFactor: 1,
-                          minimum: 0,
-                          showTicks: true,
-                          maximum: 50,
-                          axisLabelStyle: GaugeTextStyle(fontSize: 12),
-                          pointers: <GaugePointer>[
-                            NeedlePointer(
-                              enableAnimation: true,
-                              animationDuration: 2500,
-                              needleColor: yellow,
-                              animationType: AnimationType.easeOutBack,
-                              value: downloadingDone ? uploadSpeed : downloadSpeed,
-                              lengthUnit: GaugeSizeUnit.factor,
-                              needleStartWidth: 3,
-                              needleEndWidth: 6,
-                              needleLength: height < 700? 0.5: 0.6,
-                            ),
-                            RangePointer(
-                              value: downloadingDone ? uploadSpeed : downloadSpeed,
-                              width: 0.15,
-                              sizeUnit: GaugeSizeUnit.factor,
-                              color: yellow,
-                              animationDuration: 2500,
-                              enableAnimation: true,
-                              animationType: AnimationType.easeOutBack,
-                            )
-                          ])
-                    ],
+          body: Container(
+            height: height,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
+            child: Column(
+              children: [
+                // Meter
+                Expanded(
+                  flex: height < 750 ? 8 : 5,
+                  child: Padding(
+                    padding: height < 750 ? EdgeInsets.all(5) : EdgeInsets.all(
+                        20),
+                    child: SfRadialGauge(
+                      enableLoadingAnimation: true,
+                      animationDuration: 2500,
+                      key: null,
+                      axes: <RadialAxis>[
+                        RadialAxis(
+                            labelOffset: 15,
+                            axisLineStyle: AxisLineStyle(
+                                thicknessUnit: GaugeSizeUnit.factor,
+                                thickness: 0.15),
+                            radiusFactor: 1,
+                            minimum: 0,
+                            showTicks: true,
+                            maximum: 50,
+                            axisLabelStyle: GaugeTextStyle(fontSize: 12),
+                            pointers: <GaugePointer>[
+                              NeedlePointer(
+                                enableAnimation: false,
+                                needleColor: accentColor,
+                                value: testing ? downloadingDone
+                                    ? uploadSpeed
+                                    : downloadSpeed : 0,
+                                lengthUnit: GaugeSizeUnit.factor,
+                                needleStartWidth: 3,
+                                needleEndWidth: 6,
+                                needleLength: height < 750 ? 0.5 : 0.6,
+                              ),
+                              RangePointer(
+                                value: testing ? downloadingDone
+                                    ? uploadSpeed
+                                    : downloadSpeed : 0,
+                                width: 0.15,
+                                sizeUnit: GaugeSizeUnit.factor,
+                                color: accentColor,
+                                animationDuration: 2500,
+                                enableAnimation: true,
+                                animationType: AnimationType.easeOutBack,
+                              )
+                            ])
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              // Card
-              Expanded(
-                flex:height < 750 ? 6 : 5,
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 15.0),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                          topLeft: height < 750? Radius.circular(30.0):Radius.circular(40.0),
-                          topRight: height < 750? Radius.circular(30.0):Radius.circular(40.0)),
-                      color: cardColor),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 35.0, horizontal: 35),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                // Card
+                Expanded(
+                  flex: height < 750 ? 10 : 5,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 15.0),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topLeft: height < 750
+                                ? Radius.circular(30.0)
+                                : Radius.circular(40.0),
+                            topRight: height < 750
+                                ? Radius.circular(30.0)
+                                : Radius.circular(40.0)),
+                        color: cardColor),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 35.0, horizontal: 35),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
 
-                        // List
-                        Column(
-                          children: [
+                          // List
+                          Column(
+                            children: [
 
-                            // Ping
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.swap_vert_sharp,size: listIconSize,
-                                      color: yellow,),
-                                    SizedBox(width: 10,),
-                                    Text(
-                                      "Ping",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: listFontSize),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      lastPing.toStringAsFixed(1),
-                                      style: TextStyle(
-                                          color: yellow,
-                                          fontSize: listFontSize,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(
-                                      width: 5.0,
-                                    ),
-                                    Text(
-                                      "ms",
-                                      style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: listSpeedSize),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
+                              // Ping
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.swap_horiz_sharp,
+                                        size: listIconSize,
+                                        color: accentColor,),
+                                      SizedBox(width: 10,),
+                                      Text(
+                                        "Ping",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: listFontSize),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        lastPing.toStringAsFixed(1),
+                                        style: TextStyle(
+                                            color: accentColor,
+                                            fontSize: listFontSize,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(
+                                        width: 5.0,
+                                      ),
+                                      Text(
+                                        "ms",
+                                        style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: listSpeedSize),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
 
-                            SizedBox(height: 15,),
+                              SizedBox(height: 15,),
 
-                            // Download
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.download_sharp,
-                                      size: listIconSize,
-                                      color: yellow,
-                                    ),
-                                    SizedBox(width: 10,),
-                                    Text(
-                                      "Download",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: listFontSize),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      downloadSpeed.toStringAsFixed(2),
-                                      style: TextStyle(
-                                          color: yellow,
-                                          fontSize: listFontSize,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(
-                                      width: 5.0,
-                                    ),
-                                    Text(
-                                      dspeed == SpeedUnit.Mbps
-                                          ? "Mbps"
-                                          : "Kbps",
-                                      style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: listSpeedSize),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
+                              // Download
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.download_sharp,
+                                        size: listIconSize,
+                                        color: accentColor,
+                                      ),
+                                      SizedBox(width: 10,),
+                                      Text(
+                                        "Download",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: listFontSize),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        downloadSpeed.toStringAsFixed(2),
+                                        style: TextStyle(
+                                            color: accentColor,
+                                            fontSize: listFontSize,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(
+                                        width: 5.0,
+                                      ),
+                                      Text(
+                                        dspeed == SpeedUnit.Mbps
+                                            ? "Mbps"
+                                            : "Kbps",
+                                        style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: listSpeedSize),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
 
-                            SizedBox(height: 15,),
+                              SizedBox(height: 15,),
 
-                            // Upload
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.upload_sharp,
-                                      size: listIconSize,
-                                      color: yellow,
-                                    ),
-                                    SizedBox(width: 10,),
-                                    Text(
-                                      "Upload",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: listFontSize),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      uploadSpeed.toStringAsFixed(2),
-                                      style: TextStyle(
-                                          color: yellow,
-                                          fontSize:listFontSize,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(
-                                      width: 5.0,
-                                    ),
-                                    Text(
-                                      uspeed == SpeedUnit.Mbps
-                                          ? "Mbps"
-                                          : "Kbps",
-                                      style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: listSpeedSize),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
+                              // Upload
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.upload_sharp,
+                                        size: listIconSize,
+                                        color: accentColor,
+                                      ),
+                                      SizedBox(width: 10,),
+                                      Text(
+                                        "Upload",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: listFontSize),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        uploadSpeed.toStringAsFixed(2),
+                                        style: TextStyle(
+                                            color: accentColor,
+                                            fontSize: listFontSize,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(
+                                        width: 5.0,
+                                      ),
+                                      Text(
+                                        uspeed == SpeedUnit.Mbps
+                                            ? "Mbps"
+                                            : "Kbps",
+                                        style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: listSpeedSize),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
 
-                        // Progress
-                        Column(
-                          children: [
-                            Text(
-                              testing
-                                  ? downloadingDone
-                                      ? "Testing Upload Speed"
-                                      : "Testing Download Speed"
-                                  : "Start Test",
-                              style: TextStyle(fontSize: 18),
-                            ),
-                            SizedBox(
-                              height: 10.0,
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.devices_sharp,
-                                  size: height < 750? 40:55,
-                                  color: yellow,
-                                ),
-                                Expanded(
-                                    child: LinearPercentIndicator(
-                                      lineHeight: 8.0,
-                                      percent: progress / 100,
-                                      progressColor: yellow,
-                                      animationDuration: 1000,
-                                      backgroundColor: Colors.white24,
-                                    )),
-                                Icon(
-                                  Icons.cloud,
-                                  size:height < 750? 40:55,
-                                  color: yellow,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          // Progress
+                          Column(
+                            children: [
+                              Text(
+                                testing
+                                    ? downloadingDone
+                                    ? "Testing Upload Speed"
+                                    : "Testing Download Speed"
+                                    : "Start Test",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.devices_sharp,
+                                    size: height < 750 ? 40 : 55,
+                                    color: accentColor,
+                                  ),
+                                  Expanded(
+                                      child: LinearPercentIndicator(
+                                        lineHeight: 8.0,
+                                        percent: progress / 100,
+                                        progressColor: accentColor,
+                                        animationDuration: 1000,
+                                        backgroundColor: Colors.white24,
+                                      )),
+                                  Icon(
+                                    Icons.cloud,
+                                    size: height < 750 ? 40 : 55,
+                                    color: accentColor,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
 
-                        // Start button
-                        RaisedButton(
+                          // Start button
+                          RaisedButton(
 
-                          padding: height <800? EdgeInsets.symmetric(horizontal: 20.0,vertical: 8): EdgeInsets.symmetric(horizontal: 30.0,vertical: 15),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                          onPressed:testing ? null : () {
+                            padding: height < 800 ? EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 8) : EdgeInsets
+                                .symmetric(horizontal: 30.0, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30)),
+                            onPressed: testing ? null : () {
                               setState(() {
                                 downloadSpeed = 0;
                                 uploadSpeed = 0;
@@ -445,20 +497,65 @@ class _HomeState extends State<Home> {
                                 downloadingDone = false;
                               });
                               onStartTest();
+                            },
+                            color: accentColor,
+                            elevation: 12.0,
+                            child: Text("START", style: TextStyle(
+                              color: background,
+                              fontSize: height < 750 ? 22 : 24,),),
+                          )
 
-                          },
-                          color: yellow,
-                          elevation: 12.0,
-                          child: Text("START",style: TextStyle(color: background,fontSize:height <750? 22:24,),),
-                        )
-
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              )
+                )
+              ],
+            ),
+          ));
+    }else {
+      return Scaffold(
+          backgroundColor: background,
+          appBar: AppBar(
+            elevation: 0.0,
+            centerTitle: true,
+            title: Text(
+              "Internet Speed Tester",
+              style: TextStyle(color: accentColor, fontSize: 24.0),
+            ),
+            actions: [
+              IconButton(icon: Icon(Icons.share_sharp), onPressed: () {
+                try {
+                  Share.share(
+                      "https://play.google.com/store/apps/details?id=com.vishva.internet.speed.tester.internetspeedtest",
+                      subject: "PDF Converter Plus");
+                } catch (e) {
+                  print(e);
+                }
+              }),
+              SizedBox(width: 10.0,)
             ],
+            backgroundColor: Colors.transparent,
           ),
-        ));
+        body: Padding(
+          padding: const EdgeInsets.symmetric(vertical:8.0,horizontal: 20.0),
+          child: Container(
+            height: MediaQuery.of(context).size.height/ 1.3,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                    child: SvgPicture.asset("Assets/signal.svg",placeholderBuilder: (BuildContext context) => Container(
+                        padding: const EdgeInsets.all(30.0),
+                        child: const CircularProgressIndicator()))),
+                SizedBox(height: 20.0,),
+                Flexible(child: Text("Connect to a Network",style: TextStyle(fontSize: 22.0,color:accentColor ),textAlign: TextAlign.center,))
+              ],
+            ),
+          ),
+        )
+      );
+    }
+
   }
 }
