@@ -79,17 +79,21 @@ class _HomeState extends State<Home> {
       case ConnectivityResult.wifi:
         setState((){
           isConnected = true ;
+
         });
         break;
       case ConnectivityResult.mobile:
         setState((){
           isConnected = true ;
+
         });
         break;
       case ConnectivityResult.none:
         setState(() => _connectionStatus = result.toString());
         setState((){
           isConnected = false ;
+          downloadSpeed = 0.0;
+          uploadSpeed = 0.0;
         });
         print(_connectionStatus);
         break;
@@ -97,6 +101,8 @@ class _HomeState extends State<Home> {
         setState(() => _connectionStatus = 'Failed to get connectivity.');
         setState((){
           isConnected = false;
+          downloadSpeed = 0.0;
+          uploadSpeed = 0.0;
         });
         print(_connectionStatus);
         break;
@@ -142,6 +148,7 @@ class _HomeState extends State<Home> {
             uploadSpeed = 0.0;
             uspeed = SpeedUnit.Kbps;
             testing = false;
+            progress = 0;
           });
         },
       );
@@ -168,10 +175,13 @@ class _HomeState extends State<Home> {
         });
       },
       onError: (String errorMessage, String speedTestError) {
+        print(errorMessage);
+        print(speedTestError);
         setState(() {
           downloadSpeed = 0.0;
           dspeed = SpeedUnit.Kbps;
           testing = false;
+          progress = 0;
         });
       },
     );
@@ -541,16 +551,19 @@ class _HomeState extends State<Home> {
           padding: const EdgeInsets.symmetric(vertical:8.0,horizontal: 20.0),
           child: Container(
             height: MediaQuery.of(context).size.height/ 1.3,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                    child: SvgPicture.asset("Assets/signal.svg",placeholderBuilder: (BuildContext context) => Container(
-                        padding: const EdgeInsets.all(30.0),
-                        child: const CircularProgressIndicator()))),
-                SizedBox(height: 20.0,),
-                Flexible(child: Text("Connect to a Network",style: TextStyle(fontSize: 22.0,color:accentColor ),textAlign: TextAlign.center,))
-              ],
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                      child: SvgPicture.asset("Assets/signal.svg",height: 200.0,placeholderBuilder: (BuildContext context) => Container(
+                          padding: const EdgeInsets.all(30.0),
+                          child: const CircularProgressIndicator()))),
+                  SizedBox(height: 20.0,),
+                  Flexible(child: Text("Connect to a Network",style: TextStyle(fontSize: 22.0,color:accentColor ),textAlign: TextAlign.center,))
+                ],
+              ),
             ),
           ),
         )
