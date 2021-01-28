@@ -200,9 +200,16 @@ class _HomeState extends State<Home> {
     double height = MediaQuery.of(context).size.height;
     print(MediaQuery.of(context).size.height);
 
+
     if(height < 750){
       listFontSize = 22;
       listSpeedSize = 16;
+    }
+
+    if(height < 600){
+      listFontSize = 16;
+      listSpeedSize = 12;
+      listIconSize = 16;
     }
 
     if(isConnected) {
@@ -213,7 +220,7 @@ class _HomeState extends State<Home> {
             centerTitle: true,
             title: Text(
               "Internet Speed Tester",
-              style: TextStyle(color: accentColor, fontSize: 24.0),
+              style: TextStyle(color: accentColor, fontSize: height  < 600?  18: 24.0),
             ),
             actions: [
               IconButton(icon: Icon(Icons.share_sharp), onPressed: () {
@@ -302,12 +309,12 @@ class _HomeState extends State<Home> {
                                 : Radius.circular(40.0)),
                         color: cardColor),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding: height < 600 ? EdgeInsets.symmetric(
+                          vertical: 20.0, horizontal: 20): EdgeInsets.symmetric(
                           vertical: 35.0, horizontal: 35),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-
                           // List
                           Column(
                             children: [
@@ -461,7 +468,7 @@ class _HomeState extends State<Home> {
                                     ? "Testing Upload Speed"
                                     : "Testing Download Speed"
                                     : "Start Test",
-                                style: TextStyle(fontSize: 18),
+                                style: height <600 ?TextStyle(fontSize: 16)  :TextStyle(fontSize: 18),
                               ),
                               SizedBox(
                                 height: 10.0,
@@ -470,7 +477,7 @@ class _HomeState extends State<Home> {
                                 children: [
                                   Icon(
                                     Icons.devices_sharp,
-                                    size: height < 750 ? 40 : 55,
+                                    size: height < 750 ? height < 600 ? 35 : 40 : 55,
                                     color: accentColor,
                                   ),
                                   Expanded(
@@ -483,7 +490,7 @@ class _HomeState extends State<Home> {
                                       )),
                                   Icon(
                                     Icons.cloud,
-                                    size: height < 750 ? 40 : 55,
+                                    size:height < 750 ? height < 600 ? 35 : 40 : 55,
                                     color: accentColor,
                                   ),
                                 ],
@@ -510,9 +517,11 @@ class _HomeState extends State<Home> {
                             },
                             color: accentColor,
                             elevation: 12.0,
-                            child: Text("START", style: TextStyle(
+                            child:testing ? Text("Testing", style: TextStyle(
                               color: background,
-                              fontSize: height < 750 ? 22 : 24,),),
+                              fontSize: height < 750 ? 22 : 24,),):Text("Start", style: TextStyle(
+                              color: background,
+                              fontSize: height < 750 ? 22 : 24,),)
                           )
 
                         ],
@@ -531,14 +540,14 @@ class _HomeState extends State<Home> {
             centerTitle: true,
             title: Text(
               "Internet Speed Tester",
-              style: TextStyle(color: accentColor, fontSize: 24.0),
+              style: TextStyle(color: accentColor, fontSize: height  < 600?  18: 24.0),
             ),
             actions: [
               IconButton(icon: Icon(Icons.share_sharp), onPressed: () {
                 try {
                   Share.share(
                       "https://play.google.com/store/apps/details?id=com.vishva.internet.speed.tester.internetspeedtest",
-                      subject: "PDF Converter Plus");
+                      subject: "Internet Speed Tester");
                 } catch (e) {
                   print(e);
                 }
@@ -557,11 +566,11 @@ class _HomeState extends State<Home> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Flexible(
-                      child: SvgPicture.asset("Assets/signal.svg",height: 200.0,placeholderBuilder: (BuildContext context) => Container(
+                      child: SvgPicture.asset("Assets/signal.svg",height: height <600 ? 150: 200.0,placeholderBuilder: (BuildContext context) => Container(
                           padding: const EdgeInsets.all(30.0),
                           child: const CircularProgressIndicator()))),
                   SizedBox(height: 20.0,),
-                  Flexible(child: Text("Connect to a Network",style: TextStyle(fontSize: 22.0,color:accentColor ),textAlign: TextAlign.center,))
+                  Flexible(child: Text("Connect to a Network",style: TextStyle(fontSize: height <600? 18: 22.0,color:accentColor ),textAlign: TextAlign.center,))
                 ],
               ),
             ),
